@@ -1,5 +1,4 @@
 ﻿using Exiled.API.Features;
-using System;
 
 namespace Better_207
 {
@@ -8,8 +7,7 @@ namespace Better_207
         public override string Prefix => "Better207";
         public override string Name => "Better 207";
         public override string Author => "VT";
-        public override Version Version { get; } = new Version(2, 0, 0);
-
+        public override Version Version { get; } = new Version(1, 0, 0);
 
         public EventHandler EventHandler { get; private set; }
 
@@ -27,7 +25,6 @@ namespace Better_207
             EventHandler.DetachEvent();
             base.OnDisabled();
         }
-
 
     }
 }

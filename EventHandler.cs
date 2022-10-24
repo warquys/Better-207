@@ -4,8 +4,6 @@ using Exiled.CustomItems.API.Features;
 using Exiled.Events.EventArgs;
 using MEC;
 using PlayerStatsSystem;
-using System;
-using System.Collections.Generic;
 
 namespace Better_207
 {

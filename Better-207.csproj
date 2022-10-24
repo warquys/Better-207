@@ -5,6 +5,8 @@
     <RootNamespace>Better_207</RootNamespace>
 	<LangVersion>latest</LangVersion>
 	<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	<Authors>VT</Authors>
+	<ImplicitUsings>True</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
