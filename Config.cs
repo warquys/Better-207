@@ -9,10 +9,10 @@ namespace Better_207
         public bool IsEnabled { get; set; } = true;
 
         [Description("↓Chance of being damaged after drink SCP-207 (in %)")]
-        public ushort DommageChance { get; set; } = 0;
+        public ushort DommageChance { get; set; } = 100;
 
         [Description("↓Damage received")]
-        public int Dommage { get; set; } = 20;
+        public int DommageAmount { get; set; } = 20;
 
         [Description("↓Duration of SCP-207 effect, if 0 no limit")]
         public int EffectDuration { get; set; } = 20;

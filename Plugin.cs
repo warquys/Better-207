@@ -5,9 +5,9 @@ namespace Better_207
 {
     public class Plugin : Plugin<Config>
     {
-        public override string Prefix => "BlackOut";
-        public override string Name => "BlackOut";
-        public override string Author => "Rysik5318, fix by VT";
+        public override string Prefix => "Better207";
+        public override string Name => "Better 207";
+        public override string Author => "VT";
         public override Version Version { get; } = new Version(2, 0, 0);
 
 

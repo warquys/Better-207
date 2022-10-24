@@ -16,8 +16,7 @@ namespace Better_207
         
         private Config _config;
 
-        private List<CoroutineHandle> _coroutineHandles;
-        private List<Player> _noDommage207Effect;
+        private Dictionary<Player, (CoroutineHandle, short)> _coroutineHandles;
 
         #endregion
 
@@ -25,8 +24,7 @@ namespace Better_207
         internal EventHandler(Config config)
         {
             _config = config;
-            _coroutineHandles = new List<CoroutineHandle>();
-            _noDommage207Effect = new List<Player>();
+            _coroutineHandles = new Dictionary<Player, (CoroutineHandle, short)>();
             AttachEvent();
         }
         #endregion
@@ -46,14 +44,17 @@ namespace Better_207
             Exiled.Events.Handlers.Server.RoundEnded -= OnRoundEnded;
         }
 
-        private IEnumerator<float> DecreasesEffect207Coroutine(Player player)
+        private IEnumerator<float> DecreasesEffect207Coroutine(Player player, short intensityToDecreases = 1)
         {
-            yield return _config.EffectDuration;
+            yield return Timing.WaitForSeconds(_config.EffectDuration);
+            yield return Timing.WaitForOneFrame; //Other yield bc (Timing.WaitForOneFrame = -inifinity) so idk who EMC reacte if it is added
+
             var effect207    = player.GetEffect(EffectType.Scp207);
-            var newIntensity = (byte)(effect207.Intensity - 1);
+            var newIntensity = (byte)Math.Max(effect207.Intensity - intensityToDecreases, 0);
             player.ChangeEffectIntensity(EffectType.Scp207, newIntensity);
-            if (newIntensity == 0)
-                _noDommage207Effect.Remove(player);
+
+            if (_coroutineHandles.ContainsKey(player))
+                _coroutineHandles.Remove(player);
             yield break;
         }
 
@@ -63,39 +64,46 @@ namespace Better_207
 
         private void OnHurt(HurtingEventArgs ev)
         {
-            if (ev.Handler.Type == DamageType.Scp207 && _noDommage207Effect.Contains(ev.Target))
+            if (!_config.NoDammage || ev.Handler.Type != DamageType.Scp207) return;
+
+            if (_config.EffectDuration == 0 || _coroutineHandles.ContainsKey(ev.Target))
                 ev.IsAllowed = false;
         }
 
         private void OnRoundEnded(RoundEndedEventArgs ev)
         {
-            Timing.KillCoroutines(_coroutineHandles.ToArray());
+            foreach (var coroutine in _coroutineHandles.Values)
+                Timing.KillCoroutines(coroutine.Item1);
             _coroutineHandles.Clear();
-            _noDommage207Effect.Clear();
         }
 
         private void OnUseItemd(UsedItemEventArgs ev)
         {
             //check if it was a real SCP 207
-            if (ev.Item.Type == ItemType.SCP207 && !CustomItem.TryGet(ev.Item, out _)) 
+            if (ev.Item.Type != ItemType.SCP207 || CustomItem.TryGet(ev.Item, out _)) return;
+
+            if (_config.DommageAmount != 0)
             {
-
-                if (_config.Dommage != 0)
+                if (UnityEngine.Random.Range(1, 100) <= _config.DommageChance)
                 {
-
-                    if (UnityEngine.Random.Range(1, 100) <= _config.DommageChance)
-                    {
-                        var dommageHandler = new PlayerStatsSystem.UniversalDamageHandler(_config.Dommage, PlayerStatsSystem.DeathTranslations.Scp207);
-                        ev.Player.Hurt(dommageHandler);
-                    }
+                    var dommageHandler = new UniversalDamageHandler(_config.DommageAmount, DeathTranslations.Scp207);
+                    ev.Player.Hurt(dommageHandler);
                 }
+            }
 
-                if (_config.EffectDuration != 0)
+            if (_config.EffectDuration != 0)
+            {
+                if (_coroutineHandles.ContainsKey(ev.Player))
+                {
+                    var coroutineIntensity = _coroutineHandles[ev.Player];
+                    Timing.KillCoroutines(_coroutineHandles[ev.Player].Item1);
+                    var coroutine = Timing.RunCoroutine(DecreasesEffect207Coroutine(ev.Player, coroutineIntensity.Item2));
+                    _coroutineHandles[ev.Player] = (coroutine, 1);
+                }
+                else
                 {
                     var coroutine = Timing.RunCoroutine(DecreasesEffect207Coroutine(ev.Player));
-                    _coroutineHandles.Add(coroutine);
-                    if (_config.NoDammage)
-                        _noDommage207Effect.Add(ev.Player);
+                    _coroutineHandles.Add(ev.Player, (coroutine, 1));
                 }
             }
         }
